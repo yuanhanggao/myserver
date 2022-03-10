@@ -86,7 +86,7 @@ bool Http::get_url(){
     state = URL;
     int i = 0;
     int request_line_len = strlen(request_line);
-    while (request_line[request_line_pos] = ' '){
+    while (request_line[request_line_pos] == ' '){
         if (request_line_pos >= request_line_len){
             printf("Analyse url failed, "
                    "due to out of request_line's boundary!\n");

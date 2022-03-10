@@ -8,8 +8,8 @@ int main(int argc, char **argv){
         exit(1);
     }
     Socket_link Socket(atoi(argv[1]));
-    Socket.Accept();
     while(1){
+        Socket.Accept();
         Socket.Read();
         Socket.Http_analyse();
         Socket.Write();
