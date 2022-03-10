@@ -40,6 +40,7 @@ bool Http::Analyse_request(){
     }
     if (get_request_line()&&get_header_line()&&get_body_line()){
         state = FINISH;
+    	response_code = SUCCESS;
         printf("Http analyse success!\n");
         return true;
     } 
@@ -225,13 +226,13 @@ char *Http::Build_response(int &length){
 void Http::fill_success_response(){
     if (strlen(response) != 0)
         memset(response, 0, BUF_LENGTH);
-    strcat(response, "HTTP/1.0 501 Method Not Implemented\r\n");
+    strcat(response, "HTTP/1.0 200 Method Not Implemented\r\n");
     strcat(response, SERVER_STRING);
     strcat(response, "Content-Type: text/html\r\n");
     strcat(response, "\r\n");
     strcat(response, "<HTML><HEAD><TITLE>Method Not Implemented\r\n");
     strcat(response, "</TITLE></HEAD>\r\n");
-    strcat(response, "<BODY><P>HTTP request method not supported.\r\n");
+    strcat(response, "<BODY><P>HTTP request success.\r\n");
     strcat(response, "</BODY></HTML>\r\n");
 }
 

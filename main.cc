@@ -7,12 +7,14 @@ int main(int argc, char **argv){
         printf("Usage: %s <port>\n", argv[0]);
         exit(1);
     }
-    Socket_link Socket(atoi(argv[1]));
+    Server_Socket_link Server_Socket(atoi(argv[1]));
     while(1){
-        Socket.Accept();
-        Socket.Read();
-        Socket.Http_analyse();
-        Socket.Write();
+        int client_sock;
+        client_sock = Server_Socket.Accept();
+        Client_Socket_link Client_Sock(client_sock);
+        Client_Sock.Read();
+        Client_Sock.Http_analyse();
+        Client_Sock.Write();
     }
     return(0);
 }
