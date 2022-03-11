@@ -26,10 +26,22 @@ Thread_pool::Thread_pool(int min_thread_num,
     }
 
     if (pthread_mutex_init(&lock, NULL) != 0 ||
-        pthread_mutex_init(&thread_counter, NULL) != 0) ||
-        pthread_cond_init(&queue_not_empty, NULL) != 0) ||
+        pthread_mutex_init(&thread_counter, NULL) != 0 ||
+        pthread_cond_init(&queue_not_empty, NULL) != 0 ||
         pthread_cond_init(&queue_not_full, NULL) != 0) {
         printf("init lock or cond false, due to %d\n", errno);
         exit(1);
     }
+
+    for (int i = 0; i < min_thr_num; i++){
+        pthread_create(&(threads[1]), NULL, 
+                       Work_thread, static_cast<void*>(this));
+        printf("start thread 0x%x...\n", 
+               static_cast<unsigned int>(threads[i]));
+    }
+    pthread_create(&admin_tid, NULL, Admin_thread, static_cast<void*>(this));
+}
+
+void *Work_thread(Thread_pool &thread_pool){
+
 }

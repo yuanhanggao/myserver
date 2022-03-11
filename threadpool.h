@@ -29,8 +29,6 @@ private:
     int shutdown;                    // state
 
     int Thread_pool::Free();
-    void *Thread_pool::Admin_thread();
-    void *Thread_pool::Work_thread();
     
 public:
     Thread_pool::Thread_pool(int min_thread_num, 
@@ -40,4 +38,7 @@ public:
     int Thread_pool::Add_task(void *(*function)(void *arg), void *arg);
 
 };
+
+void *Admin_thread(void *thread_pool);
+void *Work_thread(void *thread_pool);
 #endif
