@@ -28,13 +28,13 @@ private:
     int queue_max_size;
     int shutdown;                    // state
 
-    int Thread_pool::Free();
+    void Thread_pool::Free();
     
 public:
     Thread_pool::Thread_pool(int min_thread_num, 
                              int max_thread_num, int max_queue_size);
     Thread_pool::~Thread_pool();
-    bool Thread_pool::Is_thread_alive();
+    bool Thread_pool::Is_thread_alive(pthread_t tid);
     int Thread_pool::Add_task(void *(*function)(void *arg), void *arg);
 
 };

@@ -42,6 +42,43 @@ Thread_pool::Thread_pool(int min_thread_num,
     pthread_create(&admin_tid, NULL, Admin_thread, static_cast<void*>(this));
 }
 
+Thread_pool::~Thread_pool(){
+    shutdown = true;
+    pthread_join(admin_tid, NULL);
+
+    for (int i = 0; i< live_thr_num; i++){
+        pthread_cond_broadcast(&(queue_not_empty));
+    }
+
+    for (int i = 0; i < live_thr_num; i++){
+        pthread_join(threads[i], NULL);
+    }
+
+    Free();
+
+}
+
+void Thread_pool::Free(){
+    if (task_queue)
+        delete [] task_queue;
+    if (threads) {
+        delete [] threads; 
+        pthread_mutex_lock(&lock);
+        pthread_mutex_destroy(&lock);   //why 
+        pthread_mutex_lock(&thread_counter);
+        pthread_mutex_destroy(&thread_counter);
+        pthread_cond_destroy(&queue_not_empty);
+        pthread_cond_destroy(&queue_not_full);
+    }
+}
+
+bool Thread_pool::Is_thread_alive(pthread_t tid){
+    int kill_rc = pthread_kill(tid, 0);
+    if (kill_rc == ESRCH)
+        return false;
+    return true;
+}
+
 void *Work_thread(Thread_pool &thread_pool){
 
 }
