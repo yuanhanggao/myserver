@@ -19,7 +19,7 @@ Thread_pool::Thread_pool(int min_thread_num,
         exit(1);
     }
 
-    task_queue = new task_t[queue_max_size];
+    task_queue = new Task_t[queue_max_size];
     if (task_queue == NULL){
         printf("new task_queue false!\n");
         exit(1);
@@ -35,11 +35,11 @@ Thread_pool::Thread_pool(int min_thread_num,
 
     for (int i = 0; i < min_thr_num; i++){
         pthread_create(&(threads[1]), NULL, 
-                       Work_thread, static_cast<void*>(this));
+                       Work, static_cast<void*>(this));
         printf("start thread 0x%x...\n", 
                static_cast<unsigned int>(threads[i]));
     }
-    pthread_create(&admin_tid, NULL, Admin_thread, static_cast<void*>(this));
+    pthread_create(&admin_tid, NULL, Admin, static_cast<void*>(this));
 }
 
 Thread_pool::~Thread_pool(){
@@ -79,6 +79,111 @@ bool Thread_pool::Is_thread_alive(pthread_t tid){
     return true;
 }
 
-void *Work_thread(Thread_pool &thread_pool){
+int Thread_pool::Add_task(void *(*function)(void *arg), void *arg){
+    pthread_mutex_lock(&lock);
+    while ((queue_size == queue_max_size) && (!shutdown))
+        pthread_cond_wait(&queue_not_full, &lock);
+    if (shutdown) {
+        pthread_mutex_unlock(&lock);
+        return -1;
+    }
 
+    if (task_queue[queue_rear].arg != NULL){
+        delete task_queue[queue_rear].arg;
+        task_queue[queue_rear].arg = NULL;
+    }
+
+    task_queue[queue_rear].function = function;
+    task_queue[queue_rear].arg = arg;
+    queue_rear = (queue_rear + 1) % queue_max_size;
+    queue_size++;    
+    pthread_cond_signal(&queue_not_empty);
+    pthread_mutex_unlock(&lock);
+}
+
+void *Thread_pool::Work(void *thread_pool){
+    Thread_pool *pool = static_cast<Thread_pool *>(thread_pool);
+    pool->Work_run();
+    return pool;
+}
+
+void *Thread_pool::Admin(void *thread_pool){
+    Thread_pool *pool = static_cast<Thread_pool *>(thread_pool);
+    pool->Admin_run();
+    return pool;
+}
+
+void Thread_pool::Work_run(){
+    while (1) {
+        pthread_mutex_lock(&lock);
+
+        while (queue_size == 0 && !shutdown){
+            printf("thread 0x%x is waiting\n", 
+                   static_cast<unsigned int>(pthread_self()));
+            pthread_cond_wait(&queue_not_empty, &lock);
+
+            if (wait_exit_thr_num > 0){
+                wait_exit_thr_num--;
+                if (live_thr_num > min_thr_num){
+                    printf("thread 0x%x is exiting\n",
+                        static_cast<unsigned int>(pthread_self()));
+                    live_thr_num--;
+                    pthread_mutex_unlock(&lock);
+                    pthread_exit(NULL);
+                }
+            }
+        }
+
+        if (shutdown) {
+
+        }
+    }
+}
+
+void Thread_pool::Admin_run(){
+    while (!shutdown){
+        printf("admin -------------\n");
+        sleep(DEFAULT_TIME); 
+        pthread_mutex_lock(&lock);
+        int tmp_queue_size = queue_size;
+        int tmp_live_thr_num = live_thr_num;
+        pthread_mutex_unlock(&lock);
+
+        pthread_mutex_lock(&thread_counter);
+        int tmp_busy_thr_num = busy_thr_num;
+        pthread_mutex_unlock(&thread_counter);
+
+        printf("admin busy live -%d--%d-\n", 
+                tmp_busy_thr_num, tmp_live_thr_num);
+        if (tmp_queue_size >= MIN_WAIT_TASK_NUM &&
+            tmp_live_thr_num <= max_thr_num){
+                printf("admin add -------------\n");
+                pthread_mutex_lock(&lock);
+                int add = 0;
+                for (int i = 0; i < max_thr_num && add < DEFAULT_THREAD_NUM &&
+                    tmp_live_thr_num < max_thr_num; i++){
+                    if (threads[i] == 0 || !Is_thread_alive(threads[i])){
+                        pthread_create(&(threads[i]), NULL, Work, 
+                            static_cast<void *>(this));
+                        add++;
+                        live_thr_num++;
+                        printf("new thread -------------\n");
+                    }
+                }
+                pthread_mutex_unlock(&lock);
+        }
+
+        if ((tmp_busy_thr_num * 2) < tmp_live_thr_num &&
+            tmp_live_thr_num > min_thr_num){
+
+            pthread_mutex_lock(&lock);
+            wait_exit_thr_num = DEFAULT_THREAD_NUM;
+            pthread_mutex_unlock(&lock);
+
+            for (int i = 0; i < DEFAULT_THREAD_NUM; i++){
+                pthread_cond_signal(&queue_not_empty);
+                printf("admin cler --\n");
+            }
+        }
+    }
 }
