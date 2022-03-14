@@ -114,11 +114,11 @@ void *Thread_pool::Admin(void *thread_pool){
 }
 
 void Thread_pool::Work_run(){
-    while (1) {
+    Task_t task;
+    while(true) {
         pthread_mutex_lock(&lock);
-
-        while (queue_size == 0 && !shutdown){
-            printf("thread 0x%x is waiting\n", 
+        while (!queue_size && !shutdown){
+            printf("thread 0x%x is waiting \n", 
                    static_cast<unsigned int>(pthread_self()));
             pthread_cond_wait(&queue_not_empty, &lock);
 
@@ -126,7 +126,7 @@ void Thread_pool::Work_run(){
                 wait_exit_thr_num--;
                 if (live_thr_num > min_thr_num){
                     printf("thread 0x%x is exiting\n",
-                        static_cast<unsigned int>(pthread_self()));
+                           static_cast<unsigned int>(pthread_self()));
                     live_thr_num--;
                     pthread_mutex_unlock(&lock);
                     pthread_exit(NULL);
@@ -134,10 +134,39 @@ void Thread_pool::Work_run(){
             }
         }
 
-        if (shutdown) {
-
+        if (shutdown){
+            pthread_mutex_unlock(&lock);
+            printf("thread 0x%x is exiting\n",
+                   static_cast<unsigned int>(pthread_self()));
+            pthread_exit(NULL);
         }
+
+        task.function = task_queue[queue_front].function; 
+        task.arg = task_queue[queue_front].arg;
+
+        queue_front = (queue_front + 1) % queue_max_size;
+        queue_size--;
+
+        pthread_cond_broadcast(&queue_not_full);
+
+        pthread_mutex_unlock(&lock);
+
+        printf("thread 0x%x start working\n", 
+               static_cast<unsigned int>(pthread_self()));
+        pthread_mutex_lock(&thread_counter);
+        busy_thr_num++;
+        pthread_mutex_unlock(&thread_counter);
+
+        (*(task.function))(task.arg);
+        
+        printf("thread 0x%x end working\n", 
+               static_cast<unsigned int>(pthread_self()));
+
+        pthread_mutex_lock(&thread_counter);
+        busy_thr_num--;
+        pthread_mutex_unlock(&thread_counter);
     }
+    pthread_exit(NULL);
 }
 
 void Thread_pool::Admin_run(){

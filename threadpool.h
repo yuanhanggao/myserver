@@ -35,11 +35,11 @@ private:
     void Work_run();
     static void *Admin(void *args);
     void Admin_run();
+    bool Is_thread_alive(pthread_t tid);
 public:
     Thread_pool(int min_thread_num, 
                              int max_thread_num, int max_queue_size);
     ~Thread_pool();
-    bool Is_thread_alive(pthread_t tid);
     int Add_task(void *(*function)(void *arg), void *arg);
 
 };
