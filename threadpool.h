@@ -19,8 +19,8 @@ private:
     Task_t *task_queue;    
     int min_thr_num;                 // Minimum number of threads
     int max_thr_num;                 // Maximum number of threads
-    int live_thr_num;
-    int busy_thr_num;
+    int live_thr_num;                // existing threads
+    int busy_thr_num;                // existing threads which holding task
     int wait_exit_thr_num;           // Need to be destroyed
 
     int queue_front;

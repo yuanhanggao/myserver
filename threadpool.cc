@@ -33,13 +33,11 @@ Thread_pool::Thread_pool(int min_thread_num,
         exit(1);
     }
 
+    pthread_create(&admin_tid, NULL, Admin, static_cast<void*>(this));
     for (int i = 0; i < min_thr_num; i++){
         pthread_create(&(threads[1]), NULL, 
                        Work, static_cast<void*>(this));
-        printf("start thread 0x%x...\n", 
-               static_cast<unsigned int>(threads[i]));
     }
-    pthread_create(&admin_tid, NULL, Admin, static_cast<void*>(this));
 }
 
 Thread_pool::~Thread_pool(){
@@ -99,6 +97,7 @@ int Thread_pool::Add_task(void *(*function)(void *arg), void *arg){
     queue_size++;    
     pthread_cond_signal(&queue_not_empty);
     pthread_mutex_unlock(&lock);
+    return 0;
 }
 
 void *Thread_pool::Work(void *thread_pool){
