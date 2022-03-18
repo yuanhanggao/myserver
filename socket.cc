@@ -9,6 +9,7 @@ Socket_link::Socket_link(){
 }
 
 Socket_link::~Socket_link(){
+    close(sock);
 }
 
 Client_Socket_link::Client_Socket_link(const int client_sock){
@@ -16,8 +17,8 @@ Client_Socket_link::Client_Socket_link(const int client_sock){
     sock = client_sock;
     state = CONNECTED;
 }
+
 Client_Socket_link::~Client_Socket_link(){
-    close(sock);
 }
 
 void Client_Socket_link::Read(){
@@ -45,6 +46,10 @@ void Client_Socket_link::Write(){
         write(sock, buf, message_length);
 }
 
+int Client_Socket_link::Get_sock(){
+    return sock;
+}
+
 Server_Socket_link::Server_Socket_link(const short port){
     sock = socket(PF_INET, SOCK_STREAM, 0);
     memset(&adr, 0, sizeof(adr));
@@ -59,7 +64,6 @@ Server_Socket_link::Server_Socket_link(const short port){
 }
 
 Server_Socket_link::~Server_Socket_link(){
-    close(sock);
 }
 
 int Server_Socket_link::Accept(){
@@ -69,4 +73,8 @@ int Server_Socket_link::Accept(){
         inet_ntoa(adr.sin_addr), ntohs(adr.sin_port));
     state = CONNECTED;
     return(clnt_sock);
+}
+
+int Server_Socket_link::Get_sock(){
+    return sock;
 }

@@ -22,6 +22,7 @@ private:
 public:
     Client_Socket_link(const int client_sock);
     ~Client_Socket_link();
+    int Get_sock();
     void Read();
     void Http_analyse();
     void Write();
@@ -32,6 +33,7 @@ class Server_Socket_link: private Socket_link{
 public:
     Server_Socket_link(const short port);
     ~Server_Socket_link();
+    int Get_sock();
     int Accept();
 };
 #endif 

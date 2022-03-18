@@ -86,10 +86,8 @@ int Thread_pool::Add_task(void *(*function)(void *arg), void *arg){
         return -1;
     }
 
-    if (task_queue[queue_rear].arg != NULL){
-        delete task_queue[queue_rear].arg;
+    if (task_queue[queue_rear].arg != NULL)
         task_queue[queue_rear].arg = NULL;
-    }
 
     task_queue[queue_rear].function = function;
     task_queue[queue_rear].arg = arg;

@@ -7,6 +7,7 @@ int main(int argc, char **argv){
         printf("Usage: %s <port>\n", argv[0]);
         exit(1);
     }
+    
     Server_Socket_link Server_Socket(atoi(argv[1]));
     while(1){
         int client_sock;
