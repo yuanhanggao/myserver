@@ -1,4 +1,3 @@
-#include <string.h>
 #include <unistd.h>
 #include "socket.h"
 #include "common.h"

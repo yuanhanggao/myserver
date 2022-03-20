@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
+#include <string.h>
 void error_die(const char* message);
 void error_handle(const char* message);
 void warn(const char* message);
