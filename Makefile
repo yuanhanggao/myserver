@@ -1,5 +1,5 @@
 CC = g++
-CFLAG = -g3 -lpthread
+CFLAG = -gstabs+ -lpthread
 PWD = $(shell pwd)
 SRC = $(shell find ./ -name "*.cc" | grep -v "test") 
 INC = -I$(PWD) 
