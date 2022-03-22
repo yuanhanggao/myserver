@@ -1,6 +1,7 @@
 #include <string.h>
 #include "http.h"
-char* Http::SERVER_STRING = "Server: jdbhttpd/0.1.0\r\n";
+
+char* Http::SERVER_STRING = (char *)"Server: jdbhttpd/0.1.0\r\n";
 Http::Http(const char *message, int length){
     analysed_failed = false;
     state = INIT;

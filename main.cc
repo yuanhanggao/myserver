@@ -1,4 +1,5 @@
 #include "socket.h"
+#include "event.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +8,7 @@ int main(int argc, char **argv){
         printf("Usage: %s <port>\n", argv[0]);
         exit(1);
     }
-    
+#if 0    
     Server_Socket_link Server_Socket(atoi(argv[1]));
     while(1){
         int client_sock;
@@ -17,5 +18,8 @@ int main(int argc, char **argv){
         Client_Sock.Http_analyse();
         Client_Sock.Write();
     }
+#endif
+    Events events(atoi(argv[1]));
+    events.Process_events();
     return(0);
 }

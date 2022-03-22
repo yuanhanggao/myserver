@@ -1,7 +1,7 @@
 CC = g++
 CFLAG = -g3 -lpthread
 PWD = $(shell pwd)
-SRC = $(shell find ./ -name "*.cc") 
+SRC = $(shell find ./ -name "*.cc" | grep -v "test") 
 INC = -I$(PWD) 
 PROM = server
 OBJ = $(PROM).o
