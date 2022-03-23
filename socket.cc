@@ -1,20 +1,36 @@
 #include <unistd.h>
+#include <fcntl.h>
 #include "socket.h"
 #include "common.h"
 #include "http.h"
+
 Socket_link::Socket_link(){
     memset(&adr, 0, sizeof(adr));
     state = CONNECTIONG; 
 }
 
 Socket_link::~Socket_link(){
+    printf("close fd\n");
     close(sock);
 }
 
-Client_Socket_link::Client_Socket_link(const int client_sock){
+int Socket_link::Set_block(int mode){
+    int flags = fcntl(sock, F_GETFL, 0);
+    if (flags < 0)
+        return errno;
+    if (mode)
+        return fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+    return fcntl(sock, F_SETFL, flags | ~O_NONBLOCK);
+}
+
+void Client_Socket_link::_create(const int client_sock){
     memset(buf, 0, buf_length);
     sock = client_sock;
     state = CONNECTED;
+}
+
+Client_Socket_link::Client_Socket_link(const int client_sock){
+    _create(client_sock);
 }
 
 Client_Socket_link::~Client_Socket_link(){
@@ -62,6 +78,21 @@ Server_Socket_link::Server_Socket_link(const short port){
     }
 }
 
+Server_Socket_link::Server_Socket_link(const short port, bool _is_block){
+    sock = socket(PF_INET, SOCK_STREAM, 0);
+    memset(&adr, 0, sizeof(adr));
+    adr.sin_family = AF_INET;
+    adr.sin_addr.s_addr = htonl(INADDR_ANY);
+    adr.sin_port = htons(port);
+    if (bind(sock, (struct sockaddr*)&adr, sizeof(adr)) == -1)
+        error_die("bind() error");
+    if (listen(sock, 20) < 0){
+        error_die("listen() error");
+    }
+
+    Set_block(_is_block); 
+}
+
 Server_Socket_link::~Server_Socket_link(){
 }
 
@@ -71,7 +102,7 @@ int Server_Socket_link::Accept(){
     printf("Connection Request: %s port: %d\n", 
         inet_ntoa(adr.sin_addr), ntohs(adr.sin_port));
     state = CONNECTED;
-    return(clnt_sock);
+    return clnt_sock;
 }
 
 int Server_Socket_link::Get_sock(){
