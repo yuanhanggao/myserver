@@ -13,7 +13,7 @@ public:
 
     Socket_link();
     ~Socket_link();
-    int Set_block(int mode); 
+    int Set_nonblock(bool mode); 
 };
 
 class Client_Socket_link: private Socket_link{
@@ -23,7 +23,6 @@ private:
     char buf[buf_length];
     void _create(const int client_sock);
 public:
-    Client_Socket_link(const int client_sock);
     Client_Socket_link(const int client_sock, bool _is_block);
     ~Client_Socket_link();
     int Get_sock();
@@ -37,7 +36,6 @@ private:
     int port;
     void _create(const short port);
 public:
-    Server_Socket_link(const short port);
     Server_Socket_link(const short port, bool _is_block);
     ~Server_Socket_link();
     int Get_sock();

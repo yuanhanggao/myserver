@@ -13,11 +13,11 @@ int main(int argc, char **argv){
 
 #if 0    
     // socket sucess!
-    Server_Socket_link Server_Socket(atoi(argv[1]));
+    Server_Socket_link Server_Socket(atoi(argv[1]), false);
     while(1){
         int client_sock;
         client_sock = Server_Socket.Accept();
-        Client_Socket_link Client_Sock(client_sock);
+        Client_Socket_link Client_Sock(client_sock, false);
         Client_Sock.Read();
         Client_Sock.Http_analyse();
         Client_Sock.Write();
@@ -25,10 +25,10 @@ int main(int argc, char **argv){
 #endif
 
 #if 0
-    // test events add_events and destory_events
+    // test events add_events and destory_events success
     int epoll_fd = epoll_create(256);
     struct epoll_event activeEvs[100];
-    Event *server_event = new Server_event(atoi(argv[1]), 0);
+    Event *server_event = new Server_event(atoi(argv[1]), false, 0);
     Events::Add_event(server_event, epoll_fd);
 
     while(1){
@@ -38,7 +38,7 @@ int main(int argc, char **argv){
             Event *event = static_cast<Event *>(activeEvs[i].data.ptr);
             ret = event->Do_socket_process();
             if (ret){
-                Event *client_event = new Client_event(ret, 0);
+                Event *client_event = new Client_event(ret, false, 0);
                 Events::Add_event(client_event, epoll_fd);
             } else {
                 Events::Destroy_event(event, epoll_fd);
@@ -46,11 +46,14 @@ int main(int argc, char **argv){
             }
         }
     }
+
 #endif 
 
-    // events failed! 
+//#if 0
+    // events test success! 
     Events events(atoi(argv[1]));
     events.Process_events();
 
+//#endif 
     return 0;
 }

@@ -12,5 +12,6 @@ $(PROM) : $(OBJ)
 
 $(OBJ) : $(SRC)
 	$(CC) -c $(SRC) $(INC) $(CFLAG)  
+
 clean: 
 	rm -rf $(PROM) *.o

@@ -14,7 +14,7 @@ Socket_link::~Socket_link(){
     close(sock);
 }
 
-int Socket_link::Set_block(int mode){
+int Socket_link::Set_nonblock(bool mode){
     int flags = fcntl(sock, F_GETFL, 0);
     if (flags < 0)
         return errno;
@@ -29,8 +29,9 @@ void Client_Socket_link::_create(const int client_sock){
     state = CONNECTED;
 }
 
-Client_Socket_link::Client_Socket_link(const int client_sock){
+Client_Socket_link::Client_Socket_link(const int client_sock, bool _is_nonblock){
     _create(client_sock);
+    Set_nonblock(_is_nonblock);
 }
 
 Client_Socket_link::~Client_Socket_link(){
@@ -65,7 +66,7 @@ int Client_Socket_link::Get_sock(){
     return sock;
 }
 
-Server_Socket_link::Server_Socket_link(const short port){
+void Server_Socket_link::_create(const short port){
     sock = socket(PF_INET, SOCK_STREAM, 0);
     memset(&adr, 0, sizeof(adr));
     adr.sin_family = AF_INET;
@@ -78,19 +79,9 @@ Server_Socket_link::Server_Socket_link(const short port){
     }
 }
 
-Server_Socket_link::Server_Socket_link(const short port, bool _is_block){
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-    memset(&adr, 0, sizeof(adr));
-    adr.sin_family = AF_INET;
-    adr.sin_addr.s_addr = htonl(INADDR_ANY);
-    adr.sin_port = htons(port);
-    if (bind(sock, (struct sockaddr*)&adr, sizeof(adr)) == -1)
-        error_die("bind() error");
-    if (listen(sock, 20) < 0){
-        error_die("listen() error");
-    }
-
-    Set_block(_is_block); 
+Server_Socket_link::Server_Socket_link(const short port, bool _is_nonblock){
+    _create(port);
+    Set_nonblock(_is_nonblock); 
 }
 
 Server_Socket_link::~Server_Socket_link(){

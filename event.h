@@ -18,8 +18,7 @@ class Server_event: public Event{
 private:
     Server_Socket_link *socket;
 public:
-    Server_event(const short port);
-    Server_event(const short port, int _epoll_fd);
+    Server_event(const short port, bool is_nonblock, int _epoll_fd);
     ~Server_event();
     int Do_socket_process();
 };
@@ -28,8 +27,7 @@ class Client_event: public Event{
 private:
     Client_Socket_link *socket; 
 public:
-    Client_event(int _fd);
-    Client_event(int _fd, int _epoll_fd);
+    Client_event(int _fd, bool is_nonblock, int _epoll_fd);
     ~Client_event();
     int Do_socket_process();
 };

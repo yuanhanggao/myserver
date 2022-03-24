@@ -2,6 +2,50 @@
 #include "common.h"
 #include <sys/epoll.h>
 
+
+Event::Event(){
+}
+
+Event::~Event(){
+    printf("delete the event!\n");
+}
+
+int Event::Do_socket_process(){
+}
+
+Server_event::Server_event(const short port, bool is_nonblock, int server_epoll_fd){
+    socket = new Server_Socket_link(port, is_nonblock);
+    fd= socket->Get_sock();
+    epoll_fd = server_epoll_fd;
+}
+
+Server_event::~Server_event(){
+    printf("delete the server_event!\n");
+    delete socket;
+}
+
+int Server_event::Do_socket_process(){
+    return socket->Accept();
+}
+
+Client_event::Client_event(int _fd, bool is_nonblock, int client_epoll_fd){
+    fd = _fd;
+    socket = new Client_Socket_link(_fd, is_nonblock);
+    epoll_fd = client_epoll_fd;
+}
+
+Client_event::~Client_event(){
+    printf("delete the client_event!\n");
+    delete socket;
+}
+
+int Client_event::Do_socket_process(){
+    socket->Read();
+    socket->Http_analyse();
+    socket->Write();
+    return 0;
+}
+
 Fdlist::Fdlist(){
     pos = 0;
     memset(fds, 0, sizeof(int) * MAX_FDS_NUM);
@@ -40,7 +84,7 @@ int Fdlist::Get_fds(int *_fds, int num){
 Events::Events(const short port){
     server_epoll_fd = epoll_create(256);
     thread_pool = new Thread_pool(10, 100, 100);
-    server_event = new Server_event(port, server_epoll_fd);
+    server_event = new Server_event(port, true, server_epoll_fd);
     Add_event(static_cast<Event *>(server_event), server_epoll_fd);
     fdlist = new Fdlist();
 }
@@ -119,7 +163,7 @@ void* Events::Thread_process_event(void *_events){
     num = events->fdlist->Get_fds(fds, UNIT);
     printf("after get_fds, the num is %d\n", num);
     for (i = 0; i < num; i++){
-        Event *client_event = new Client_event(fds[i], client_epoll_fd);
+        Event *client_event = new Client_event(fds[i], false, client_epoll_fd);
         Add_event(client_event, client_epoll_fd);
     }
 
@@ -136,59 +180,4 @@ void* Events::Thread_process_event(void *_events){
             printf("unknown event = %x!\n", client_events[i].events);
     }
     close(client_epoll_fd);
-}
-
-Event::Event(){
-}
-
-Event::~Event(){
-    printf("delete the event!\n");
-}
-
-int Event::Do_socket_process(){
-}
-
-Server_event::Server_event(const short port){
-    socket = new Server_Socket_link(port);
-    fd= socket->Get_sock();
-    epoll_fd = 0;
-}
-
-Server_event::Server_event(const short port, int server_epoll_fd){
-    socket = new Server_Socket_link(port, true);
-    fd= socket->Get_sock();
-    epoll_fd = server_epoll_fd;
-}
-
-Server_event::~Server_event(){
-    printf("delete the server_event!\n");
-    delete socket;
-}
-
-int Server_event::Do_socket_process(){
-    return socket->Accept();
-}
-
-Client_event::Client_event(int _fd){
-    fd = _fd;
-    socket = new Client_Socket_link(_fd);
-    epoll_fd = 0;
-}
-
-Client_event::Client_event(int _fd, int client_epoll_fd){
-    fd = _fd;
-    socket = new Client_Socket_link(_fd);
-    epoll_fd = client_epoll_fd;
-}
-
-Client_event::~Client_event(){
-    printf("delete the client_event!\n");
-    delete socket;
-}
-
-int Client_event::Do_socket_process(){
-    socket->Read();
-    socket->Http_analyse();
-    socket->Write();
-    return 0;
 }
