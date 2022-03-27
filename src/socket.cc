@@ -10,7 +10,7 @@ Socket_link::Socket_link(){
 }
 
 Socket_link::~Socket_link(){
-    printf("close fd\n");
+    dzlog_error("close fd");
     close(sock);
 }
 
@@ -39,13 +39,13 @@ Client_Socket_link::~Client_Socket_link(){
 
 void Client_Socket_link::Read(){
     if (state != CONNECTED)
-        warn("not connected!");
+        dzlog_warn("not connected!");
     message_length = read(sock, buf, buf_length);
     if (message_length  < 0)
-        error_handle("read failed!");
+        dzlog_error("read failed!");
     if (message_length == 0){
         state = FINISHED;
-        warn("finished!");
+        dzlog_warn("finished!");
     }
 }
 
@@ -72,10 +72,13 @@ void Server_Socket_link::_create(const short port){
     adr.sin_family = AF_INET;
     adr.sin_addr.s_addr = htonl(INADDR_ANY);
     adr.sin_port = htons(port);
-    if (bind(sock, (struct sockaddr*)&adr, sizeof(adr)) == -1)
-        error_die("bind() error");
+    if (bind(sock, (struct sockaddr*)&adr, sizeof(adr)) == -1){
+        dzlog_error("bind() error!");
+		exit(-1);
+	}
     if (listen(sock, 20) < 0){
-        error_die("listen() error");
+        dzlog_error("listen() error!");
+		exit(-1);
     }
 }
 
@@ -90,8 +93,8 @@ Server_Socket_link::~Server_Socket_link(){
 int Server_Socket_link::Accept(){
     socklen_t clnt_adr_size = sizeof(adr);
     int clnt_sock = accept(sock, (struct sockaddr*)&adr, &clnt_adr_size);
-    printf("Connection Request: %s port: %d\n", 
-        inet_ntoa(adr.sin_addr), ntohs(adr.sin_port));
+    dzlog_info("Connection Request: %s port: %d", 
+           inet_ntoa(adr.sin_addr), ntohs(adr.sin_port));
     state = CONNECTED;
     return clnt_sock;
 }

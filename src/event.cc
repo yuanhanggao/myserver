@@ -7,7 +7,7 @@ Event::Event(){
 }
 
 Event::~Event(){
-    printf("delete the event!\n");
+    dzlog_debug("delete the event!\n");
 }
 
 int Event::Do_socket_process(){
@@ -21,7 +21,7 @@ Server_event::Server_event(const short port, bool is_nonblock, int server_epoll_
 }
 
 Server_event::~Server_event(){
-    printf("delete the server_event!\n");
+    dzlog_debug("delete the server_event!");
     delete socket;
 }
 
@@ -36,7 +36,7 @@ Client_event::Client_event(int _fd, bool is_nonblock, int client_epoll_fd){
 }
 
 Client_event::~Client_event(){
-    printf("delete the client_event!\n");
+    dzlog_debug("delete the client_event!");
     delete socket;
 }
 
@@ -115,14 +115,14 @@ void Events::Process_events(){
             while ((fds[j] = event->Do_socket_process()) > 0) {
                 j++;
                 if (j == UNIT) {
-                    printf("put %d fd!", j);
+                    dzlog_debug("put %d fd!", j);
                     fdlist->Put_fds(fds, j);
                     j = 0;
                 }
             }
 
             if (j != 0){
-                printf("put %d fd!", j);
+                dzlog_debug("put %d fd!", j);
                 fdlist->Put_fds(fds, j);
             }
 
@@ -153,16 +153,16 @@ void* Events::Thread_process_event(void *_events){
 
     Events *events = static_cast<Events *>(_events);
     int client_epoll_fd = epoll_create(256);
-    printf("client_epoll_fd is %d, the errno is %d\n", client_epoll_fd, errno);
+    dzlog_error("client_epoll_fd is %d, the errno is %d\n", client_epoll_fd, errno);
     if (!client_epoll_fd) {
-        error_die("create client_epoll_fd failed!");    
+        dzlog_error("create client_epoll_fd failed!");    
+		exit(-1);
     }
      
     int i, num;
     int fds[UNIT];
-    printf("before get_fds\n");
     num = events->fdlist->Get_fds(fds, UNIT);
-    printf("after get_fds, the num is %d\n", num);
+    dzlog_debug("after get_fds, the num is %d\n", num);
     for (i = 0; i < num; i++){
         Event *client_event = new Client_event(fds[i], false, client_epoll_fd);
         Add_event(client_event, client_epoll_fd);
@@ -178,7 +178,7 @@ void* Events::Thread_process_event(void *_events){
             event->~Event();
         }
         else
-            printf("unknown event = %x!\n", client_events[i].events);
+            dzlog_notice("unknown event = %x!\n", client_events[i].events);
     }
     close(client_epoll_fd);
 	return NULL;

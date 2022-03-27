@@ -15,13 +15,13 @@ Thread_pool::Thread_pool(int min_thread_num,
 
     threads = new pthread_t[max_thr_num]();
     if (threads == NULL){
-        printf("new threads false!\n");
+        dzlog_error("new threads false!");
         exit(1);
     }
 
     task_queue = new Task_t[queue_max_size];
     if (task_queue == NULL){
-        printf("new task_queue false!\n");
+        dzlog_error("new task_queue false!");
         exit(1);
     }
 
@@ -29,7 +29,7 @@ Thread_pool::Thread_pool(int min_thread_num,
         pthread_mutex_init(&thread_counter, NULL) != 0 ||
         pthread_cond_init(&queue_not_empty, NULL) != 0 ||
         pthread_cond_init(&queue_not_full, NULL) != 0) {
-        printf("init lock or cond false, due to %d\n", errno);
+        dzlog_error("init lock or cond false, due to %d", errno);
         exit(1);
     }
 
@@ -115,15 +115,15 @@ void Thread_pool::Work_run(){
     while(true) {
         pthread_mutex_lock(&lock);
         while (!queue_size && !shutdown){
-            printf("thread 0x%x is waiting \n", 
-                   static_cast<unsigned int>(pthread_self()));
+            dzlog_debug("thread 0x%x is waiting", 
+                        static_cast<unsigned int>(pthread_self()));
             pthread_cond_wait(&queue_not_empty, &lock);
 
             if (wait_exit_thr_num > 0){
                 wait_exit_thr_num--;
                 if (live_thr_num > min_thr_num){
-                    printf("thread 0x%x is exiting\n",
-                           static_cast<unsigned int>(pthread_self()));
+                    dzlog_debug("thread 0x%x is exiting",
+                                static_cast<unsigned int>(pthread_self()));
                     live_thr_num--;
                     pthread_mutex_unlock(&lock);
                     pthread_exit(NULL);
@@ -133,8 +133,8 @@ void Thread_pool::Work_run(){
 
         if (shutdown){
             pthread_mutex_unlock(&lock);
-            printf("thread 0x%x is exiting\n",
-                   static_cast<unsigned int>(pthread_self()));
+            dzlog_debug("thread 0x%x is exiting",
+                        static_cast<unsigned int>(pthread_self()));
             pthread_exit(NULL);
         }
 
@@ -148,16 +148,16 @@ void Thread_pool::Work_run(){
 
         pthread_mutex_unlock(&lock);
 
-        printf("thread 0x%x start working\n", 
-               static_cast<unsigned int>(pthread_self()));
+        dzlog_debug("thread 0x%x start working", 
+                    static_cast<unsigned int>(pthread_self()));
         pthread_mutex_lock(&thread_counter);
         busy_thr_num++;
         pthread_mutex_unlock(&thread_counter);
 
         (*(task.function))(task.arg);
         
-        printf("thread 0x%x end working\n", 
-               static_cast<unsigned int>(pthread_self()));
+        dzlog_debug("thread 0x%x end working", 
+                    static_cast<unsigned int>(pthread_self()));
 
         pthread_mutex_lock(&thread_counter);
         busy_thr_num--;
@@ -168,7 +168,7 @@ void Thread_pool::Work_run(){
 
 void Thread_pool::Admin_run(){
     while (!shutdown){
-        printf("admin -------------\n");
+        dzlog_info("admin -------------");
         sleep(DEFAULT_TIME); 
         pthread_mutex_lock(&lock);
         int tmp_queue_size = queue_size;
@@ -179,11 +179,11 @@ void Thread_pool::Admin_run(){
         int tmp_busy_thr_num = busy_thr_num;
         pthread_mutex_unlock(&thread_counter);
 
-        printf("admin busy live -%d--%d-\n", 
+        dzlog_debug("admin busy live -%d--%d-", 
                 tmp_busy_thr_num, tmp_live_thr_num);
         if (tmp_queue_size >= MIN_WAIT_TASK_NUM &&
             tmp_live_thr_num <= max_thr_num){
-                printf("admin add -------------\n");
+                dzlog_debug("admin add -------------");
                 pthread_mutex_lock(&lock);
                 int add = 0;
                 for (int i = 0; i < max_thr_num && add < DEFAULT_THREAD_NUM &&
@@ -193,7 +193,7 @@ void Thread_pool::Admin_run(){
                             static_cast<void *>(this));
                         add++;
                         live_thr_num++;
-                        printf("new thread -------------\n");
+                        dzlog_debug("new thread -------------");
                     }
                 }
                 pthread_mutex_unlock(&lock);
@@ -208,7 +208,7 @@ void Thread_pool::Admin_run(){
 
             for (int i = 0; i < DEFAULT_THREAD_NUM; i++){
                 pthread_cond_signal(&queue_not_empty);
-                printf("admin cler --\n");
+                dzlog_debug("admin cler --");
             }
         }
     }

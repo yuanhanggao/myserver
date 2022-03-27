@@ -5,12 +5,25 @@
 #include <stdlib.h>
 #include <sys/epoll.h>
 
+const char *ZLOG_CONF_PATH = (char *)"etc/zlog.conf";
+
 int main(int argc, char **argv){
     if (argc != 2) {
         printf("Usage: %s <port>\n", argv[0]);
         exit(1);
     }
+	
+	int rc = 0;
+	rc = dzlog_init(ZLOG_CONF_PATH, "myserver");	
+	if (rc){
+		printf("init zlog failed\n");
+		return -1;
+	}
+	
+	dzlog_info("one instance check...!");
 
+	if (single_instance() == -1)
+		return -1;
 #if 0    
     // socket sucess!
     Server_Socket_link Server_Socket(atoi(argv[1]), false);
