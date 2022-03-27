@@ -10,8 +10,6 @@
 #include <string.h>
 #include <sys/file.h>
 #include "zlog.h"
-void error_die(const char* message);
-void error_handle(const char* message);
-void warn(const char* message);
+
 int single_instance(void);
 #endif 
