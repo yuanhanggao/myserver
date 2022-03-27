@@ -8,7 +8,7 @@ Http::Http(const char *message, int length){
     state = INIT;
     if (length >= BUF_LENGTH){
         dzlog_error("http init failed!"
-                    " the length of input resquest is %d\n", length);
+                    " the length of input resquest is %d", length);
         response_code = UNIMPLEMENTED;
         analysed_failed = true;
         return;
@@ -43,10 +43,10 @@ bool Http::Analyse_request(){
     if (get_request_line()&&get_header_line()&&get_body_line()){
         state = FINISH;
     	response_code = SUCCESS;
-        dzlog_info("Http analyse success!\n");
+        dzlog_info("Http analyse success!");
         return true;
     } 
-    dzlog_error("Http analyse failed!\n");
+    dzlog_error("Http analyse failed!");
     response_code = UNIMPLEMENTED;
     analysed_failed = true;
     return false;
@@ -60,7 +60,7 @@ bool Http::get_method(){
     while((request_line[i] != ' ') ){
         if (i >= request_line_len){
             dzlog_error("Analyse method failed, "
-                        "due to out of request_line's boundary!\n");
+                        "due to out of request_line's boundary!");
             return false;    
         }
          
@@ -78,10 +78,10 @@ bool Http::get_method(){
     else if (0 == strncmp(tmp_method, "PUT", strlen("PUT")))
         method = PUT;
     else{
-        dzlog_warn("unkown http request method\n");
+        dzlog_warn("unkown http request method");
         return false;
     }
-    dzlog_info("the method is %d\n", method);
+    dzlog_info("the method is %d", method);
     return true;
 }
 
@@ -92,7 +92,7 @@ bool Http::get_url(){
     while (request_line[request_line_pos] == ' '){
         if (request_line_pos >= request_line_len){
             dzlog_error("Analyse url failed, "
-                        "due to out of request_line's boundary!\n");
+                        "due to out of request_line's boundary!");
             return false;
         }
         request_line_pos++;
@@ -101,12 +101,12 @@ bool Http::get_url(){
     while (request_line[request_line_pos] != ' '){
         if (request_line_pos >= request_line_len){
             dzlog_error("Analyse url failed, "
-                        "due to out of request_line's boundary!\n");
+                        "due to out of request_line's boundary!");
             return false;
         }
         if (i >= URL_MAX_LENGTH){
             dzlog_error("Analyse url failed, "
-                        "due to out of url_max_line's boundary!\n");
+                        "due to out of url_max_line's boundary!");
             return false;
         }
         url[i] = request_line[request_line_pos];
@@ -123,13 +123,13 @@ bool Http::get_request_line(){
     do{
         if (i >= REQUEST_LINE_MAX_LENGTH){
             dzlog_error("failed when analyse request line, "
-                        "the request line is too long!\n");
+                        "the request line is too long!");
             return false;
         }
 
         if (pos >= BUF_LENGTH){
             dzlog_error("failed when analyse request line, "
-                        "out of request buf's boundary!\n");
+                        "out of request buf's boundary!");
             return false;
         }
 
@@ -155,12 +155,12 @@ bool Http::get_header_line(){
     while (1){
         if (pos >= BUF_LENGTH){
             dzlog_error("failed when analyse header line, "
-                        "out of request buf's boundary!\n");
+                        "out of request buf's boundary!");
             return false;
         }
         if (i >= HEADER_MAX_LENGTH){
             dzlog_error("failed when analyse header line, "
-                        "out of header line's boundary!\n");
+                        "out of header line's boundary!");
             return false;
         }
         tmp_header[i] = request[pos];
@@ -186,12 +186,12 @@ bool Http::get_body_line(){
     while(1) {
         if (pos >= BUF_LENGTH){
             dzlog_error("failed when analyse header line, "
-                    "out of request buf's boundary!\n");
+                    "out of request buf's boundary!");
             return false;
         }
         if (i >= BODY_MAX_LENGTH){
             dzlog_error("failed when analyse body line, "
-                    "out of header line's boundary!\n");
+                    "out of header line's boundary!");
             return false;
         }
         if (request[pos] == '\n')

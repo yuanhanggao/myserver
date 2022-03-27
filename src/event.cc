@@ -7,14 +7,15 @@ Event::Event(){
 }
 
 Event::~Event(){
-    dzlog_debug("delete the event!\n");
+    dzlog_debug("delete the event!");
 }
 
 int Event::Do_socket_process(){
 	return 0;
 }
 
-Server_event::Server_event(const short port, bool is_nonblock, int server_epoll_fd){
+Server_event::Server_event(const short port, bool is_nonblock, 
+		                   int server_epoll_fd){
     socket = new Server_Socket_link(port, is_nonblock);
     fd= socket->Get_sock();
     epoll_fd = server_epoll_fd;
@@ -153,7 +154,8 @@ void* Events::Thread_process_event(void *_events){
 
     Events *events = static_cast<Events *>(_events);
     int client_epoll_fd = epoll_create(256);
-    dzlog_error("client_epoll_fd is %d, the errno is %d\n", client_epoll_fd, errno);
+    dzlog_error("client_epoll_fd is %d, the errno is %d", client_epoll_fd,
+		     	errno);
     if (!client_epoll_fd) {
         dzlog_error("create client_epoll_fd failed!");    
 		exit(-1);
@@ -162,7 +164,7 @@ void* Events::Thread_process_event(void *_events){
     int i, num;
     int fds[UNIT];
     num = events->fdlist->Get_fds(fds, UNIT);
-    dzlog_debug("after get_fds, the num is %d\n", num);
+    dzlog_debug("after get_fds, the num is %d", num);
     for (i = 0; i < num; i++){
         Event *client_event = new Client_event(fds[i], false, client_epoll_fd);
         Add_event(client_event, client_epoll_fd);
@@ -178,7 +180,7 @@ void* Events::Thread_process_event(void *_events){
             event->~Event();
         }
         else
-            dzlog_notice("unknown event = %x!\n", client_events[i].events);
+            dzlog_notice("unknown event = %x!", client_events[i].events);
     }
     close(client_epoll_fd);
 	return NULL;

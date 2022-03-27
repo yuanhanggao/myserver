@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/file.h>
+#include <getopt.h>
 #include "zlog.h"
 
 int single_instance(void);

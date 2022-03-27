@@ -4,11 +4,11 @@
 #include "threadpool.h"
 
 enum {MAX_FDS_NUM = 10240, UNIT = 512};
-
+// the base class for Server_event and Client_event
 class Event{
 public:
-    int epoll_fd;
-    int fd;
+    int epoll_fd;        // it will be 0 unless using epoll
+    int fd;              // fd
     Event();
     virtual ~Event();
     virtual int Do_socket_process();
@@ -16,20 +16,20 @@ public:
 
 class Server_event: public Event{
 private:
-    Server_Socket_link *socket;
+    Server_Socket_link *socket;   
 public:
     Server_event(const short port, bool is_nonblock, int _epoll_fd);
     ~Server_event();
-    int Do_socket_process();
+    int Do_socket_process(); // the process of server's accepting of client's fd
 };
 
 class Client_event: public Event{
 private:
-    Client_Socket_link *socket; 
+    Client_Socket_link *socket;  
 public:
     Client_event(int _fd, bool is_nonblock, int _epoll_fd);
     ~Client_event();
-    int Do_socket_process();
+    int Do_socket_process();  // the process of client's writing and reading
 };
 
 class Fdlist{
