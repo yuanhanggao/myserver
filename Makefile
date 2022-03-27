@@ -1,17 +1,24 @@
 CC = g++
 CFLAG = -gstabs+ -lpthread
-PWD = $(shell pwd)
-SRC = $(shell find ./ -name "*.cc" | grep -v "test") 
-INC = -I$(PWD) 
-PROM = server
-OBJ = $(PROM).o
-OSRC = $(shell find ./ -name "*.o")
 
-$(PROM) : $(OBJ) 
-	$(CC) $(OSRC) -o $(PROM) $(CFLAG)
+SRC_FILE = $(shell find src/ -name "*.cc" | grep -v "test") 
+INC_FLAG_DIR = -I$(PWD)/include 
 
-$(OBJ) : $(SRC)
-	$(CC) -c $(SRC) $(INC) $(CFLAG)  
+TARGET = server
+
+OBJ = $(TARGET).o
+OBJ_DIR = obj
+OSRC_FILE = $(patsubst %.cc,$(OBJ_DIR)/%.o, $(notdir $(SRC_FILE)))
+
+$(TARGET) : $(OBJ) 
+	$(CC) $(OSRC_FILE) -o $(TARGET) $(CFLAG)
+
+$(OBJ) : $(SRC_FILE)
+	$(CC) -c $(SRC_FILE) $(INC_FLAG_DIR) $(CFLAG) 
+	@mkdir -p $(OBJ_DIR)
+	@mv *.o $(OBJ_DIR)
+
+.PHONY : clean
 
 clean: 
-	rm -rf $(PROM) *.o
+	rm -rf $(TARGET) $(OBJ_DIR)
