@@ -1,7 +1,7 @@
 CC = g++
 CFLAG = -gstabs+ -lpthread
 
-SRC_FILE = $(shell find src/ -name "*.cc" | grep -v "test") 
+SRC_FILE = $(wildcard src/*.cc) 
 INC_FLAG_DIR = -I$(PWD)/include 
 
 TARGET = server
