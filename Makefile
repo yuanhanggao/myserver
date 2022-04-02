@@ -24,5 +24,4 @@ $(OBJ) : $(SRC_FILE)
 .PHONY : clean
 
 clean: 
-	rm -rf $(TARGET) $(OBJ_DIR) *.o ./log/*
-	
+	rm -rf $(TARGET) $(OBJ_DIR) *.o ./log/* tags
