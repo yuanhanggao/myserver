@@ -8,3 +8,4 @@
 6. databases
 7. clickhouse connect pool
 8. timeout function
+9. use stl and C++ 11
