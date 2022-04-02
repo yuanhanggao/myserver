@@ -1,6 +1,9 @@
 # myserver
 ## to do 
 1. add conf and command line
+conf parse lib : inih, it only needs four files: ini.c, inih.h  
+INIReader.cpp,  INIReader.h  
+command line : getopt
 2. nonblock write and read
 3. epoll edge
 4. https
