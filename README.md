@@ -1,4 +1,6 @@
 # myserver
+## introduction
+A simple server. Just for learning. It really sucks!
 ## to do 
 1. add conf and command line
 conf parse lib : inih, it only needs four files: ini.c, inih.h  

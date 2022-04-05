@@ -1,6 +1,7 @@
 #include "common.h" 
 
 const char *SERVER_LOCK_FILE_PATH = (char *)"./var/myserver.lock";
+
 #define FLAG_LOCK (O_WRONLY | O_CREAT | O_TRUNC)
 #define MODE_LOCK (S_IRWXU | S_IXGRP | S_IROTH | S_IXOTH)
 

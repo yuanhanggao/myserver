@@ -1,48 +1,16 @@
 #include "socket.h"
 #include "event.h"
+#include "conf.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
 
+// the path of configure file
 const char *ZLOG_CONF_PATH = (char *)"etc/zlog.conf";
 
-static const struct option long_options[] = {
-	{"port", required_argument, NULL, 'p'},
-	{"help", no_argument,       NULL, 'h'},
-	{0,      0,                 0,     0 }
-};
-
-void usage(void);
-bool port_validator(char *optarg);
 int main(int argc, char **argv){
-	// process the commandline
-	int opt, option_index = 0, port;
-	char *opt_str = (char *)"p:h";
-	while ((opt = getopt_long(argc, argv, opt_str,
-				  long_options, &option_index)) != -1){
-		switch (opt){
-			case 'p':
-				if (port_validator(optarg))
-					port = atoi(optarg);	
-				else{
-					printf("invalid option -'%c %s!\r\n", opt, optarg);
-					printf("Try './myserver -h' for more information.\r\n");
-					return 0;
-				}	
-				break;
-			case 'h':
-				usage();
-				return 0;
-				break;
-			default:
-				printf("invaliod option -- '%c'\r\n", opt);
-				printf("Try './myserver -h' for more information.\r\n");
-				return 0;
-				break;
-		}
-	}
-	// init the zlog conf
+	// init the zlog 
 	int rc = 0;
 	rc = dzlog_init(ZLOG_CONF_PATH, "myserver");	
 	if (rc){
@@ -53,7 +21,18 @@ int main(int argc, char **argv){
 	dzlog_info("one instance check...!");
 	if (single_instance() == -1)
 		return -1;
-
+	// read the conf 
+	Conf myserver(argc, argv);
+	printf("the port is %d\n", myserver.Get_port());
+	printf("the is_block is %d\n", myserver.Is_block());
+	printf("the is_epoll_ET is %d\n", myserver.Is_epoll_ET());
+	printf("the is_ssl is %d\n", myserver.Is_ssl());
+	printf("threadpool_conf is %d, %d, %d\n",
+		   myserver.Get_threadpool_conf().min_thread_num,
+		   myserver.Get_threadpool_conf().max_thread_num,
+		   myserver.Get_threadpool_conf().max_task_queue_size);
+	return 0;
+	int port = 8888;
 	dzlog_info("myserver run on port:%d", port);
 #if 0    
     // socket sucess!
@@ -102,19 +81,4 @@ int main(int argc, char **argv){
     return 0;
 }
 
-void usage(void){
-	printf("usage: myserver [arguments]\r\n");
-	printf("[arguments]:\r\n");
-	printf("\t-p or --port \tRun on the given port num, ");
-	printf("and the value is between 1~65535\r\n");
-	printf("\t-h or --help \tPrint Help(this message) and exit\r\n");
-}
 
-bool port_validator(char *optarg){
-	if (!optarg)
-		return false;
-	int _port = atoi(optarg);
-	if (_port < 1 or _port > 65535)
-		return false;
-	return true;
-}

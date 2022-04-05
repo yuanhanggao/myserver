@@ -10,7 +10,7 @@ Socket_link::Socket_link(){
 }
 
 Socket_link::~Socket_link(){
-    dzlog_error("close fd");
+    dzlog_debug("close fd!");
     close(sock);
 }
 
